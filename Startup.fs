@@ -46,6 +46,14 @@ module Main =
         |> Seq.map (fun (key, value) -> sprintf "%s=%s" key value)
         |> String.concat ";"
         |> fun value -> request.Headers.Add("Cookie", value)
+
+        // request.Content <- new StreamContent(context.Request.Body)
+
+        // request.Content.Headers.ContentLength <- context.Request.ContentLength
+        // context.Request.ContentType
+        // |> Option.ofObj
+        // |> Option.map Headers.MediaTypeHeaderValue.Parse
+        // |> Option.iter (fun contentType -> request.Content.Headers.ContentType <- contentType)
         
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
 
