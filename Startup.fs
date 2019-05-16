@@ -1,12 +1,14 @@
 namespace WebUntisProxy
 
 open System
+open System.Net
+open System.Net.Http
+open System.Text
+open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
-open System.Net.Http
-open System.Threading.Tasks
 
 module Environment =
     let getEnvironmentVariableOrFail key =
@@ -24,6 +26,9 @@ module Main =
         use request = new HttpRequestMessage(HttpMethod context.Request.Method, context.Request.Path.ToString())
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
         do! response.Content.CopyToAsync(context.Response.Body) |> Async.AwaitTask
+        match response.Headers.TryGetValues("Set-Cookie") with
+        | (true, cookies) -> String.concat ";;;" cookies |> printfn "============ %s"
+        | _ -> ()
         ()
     }
 
@@ -32,10 +37,22 @@ type Startup() =
     // This method gets called by the runtime. Use this method to add services to the container.
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     member this.ConfigureServices(services: IServiceCollection) =
-        services.AddHttpClient(HttpClientNames.webUntis, fun c ->
-            let baseAddress = Environment.getEnvironmentVariableOrFail "webUntisHost" |> Uri
-            c.BaseAddress <- baseAddress
-        ) |> ignore
+        let host = Environment.getEnvironmentVariableOrFail "webUntisHost" |> Uri
+        services
+            .AddHttpClient(HttpClientNames.webUntis, fun c ->
+                c.BaseAddress <- host
+            )
+            .ConfigurePrimaryHttpMessageHandler(fun () ->
+                let cookieContainer = CookieContainer()
+                let schoolName =
+                    Environment.getEnvironmentVariableOrFail "schoolName"
+                    |> Encoding.UTF8.GetBytes
+                    |> Convert.ToBase64String
+                    |> sprintf "\"_%s\"" // No idea why WebUntis adds surrounding quotes '"' and a leading underscore '_'
+                cookieContainer.Add(Cookie("schoolname", schoolName, "/WebUntis", host.Host))
+                new HttpClientHandler(CookieContainer = cookieContainer) :> HttpMessageHandler
+            )
+        |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
