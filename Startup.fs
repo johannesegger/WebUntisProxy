@@ -49,6 +49,16 @@ module Main =
         
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
 
+        // response.Headers
+        // |> Seq.iter (fun h ->
+        //     context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
+        // )
+
+        response.Content.Headers
+        |> Seq.iter (fun h ->
+            context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
+        )
+
         match response.Headers.TryGetValues("Set-Cookie") with
         | (true, cookies) ->
             cookies
@@ -71,16 +81,6 @@ module Main =
                         // IsEssential = c.)
                 context.Response.Cookies.Append(c.Name.Value, c.Value.Value, cookieOptions))
         | _ -> ()
-
-        // response.Headers
-        // |> Seq.iter (fun h ->
-        //     context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
-        // )
-
-        response.Content.Headers
-        |> Seq.iter (fun h ->
-            context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
-        )
 
         do! response.Content.CopyToAsync(context.Response.Body) |> Async.AwaitTask
 
