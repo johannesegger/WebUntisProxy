@@ -35,7 +35,8 @@ module Main =
     let proxy (context: HttpContext) = async {
         let httpClientFactory = context.RequestServices.GetService<IHttpClientFactory>()
         use httpClient = httpClientFactory.CreateClient(HttpClientNames.webUntis)
-        use request = new HttpRequestMessage(HttpMethod context.Request.Method, context.Request.Path.ToString())
+        let uri = sprintf "%s%s" context.Request.Path.Value context.Request.QueryString.Value
+        use request = new HttpRequestMessage(HttpMethod context.Request.Method, uri)
 
         context.Request.Cookies
         |> Seq.map (fun c -> c.Key, c.Value)
