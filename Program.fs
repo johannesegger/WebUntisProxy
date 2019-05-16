@@ -11,15 +11,13 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Logging
 
 module Program =
-    let exitCode = 0
-
     let CreateWebHostBuilder args =
         WebHost
             .CreateDefaultBuilder(args)
-            .UseStartup<Startup>();            
+            .UseStartup<Startup>();
 
     [<EntryPoint>]
     let main args =
         CreateWebHostBuilder(args).Build().Run()
 
-        exitCode
+        0
