@@ -97,6 +97,7 @@ module Main =
         // |> Seq.iter (fun h ->
         //     context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
         // )
+        context.Response.StatusCode <- int response.StatusCode
 
         response.Content.Headers
         |> Seq.iter (fun h ->
