@@ -78,14 +78,15 @@ module Main =
         |> String.concat ";"
         |> fun value -> request.Headers.Add("Cookie", value)
 
-        // request.Content <- new StreamContent(context.Request.Body)
-
-        // request.Content.Headers.ContentLength <- context.Request.ContentLength
-        // context.Request.ContentType
-        // |> Option.ofObj
-        // |> Option.map Headers.MediaTypeHeaderValue.Parse
-        // |> Option.iter (fun contentType -> request.Content.Headers.ContentType <- contentType)
-        
+        // request.Content <- new StreamContent(context.Request.Body) // doesn't work, because stream is read multiple times
+        use bodyStream = new MemoryStream()
+        do! context.Request.Body.CopyToAsync(bodyStream) |> Async.AwaitTask
+        request.Content <- new ByteArrayContent(bodyStream.ToArray())
+        request.Content.Headers.ContentLength <- context.Request.ContentLength
+        context.Request.ContentType
+        |> Option.ofObj
+        |> Option.map Headers.MediaTypeHeaderValue.Parse
+        |> Option.iter (fun contentType -> request.Content.Headers.ContentType <- contentType)
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
 
         // response.Headers
