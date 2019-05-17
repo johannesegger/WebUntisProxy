@@ -96,6 +96,7 @@ module Main =
         context.Response.StatusCode <- int response.StatusCode
 
         response.Headers
+        |> Seq.filter (fun h -> h.Key <> "Transfer-Encoding")
         |> Seq.map (fun h ->
             let value =
                 if h.Key.Equals("Location", StringComparison.InvariantCultureIgnoreCase) then
