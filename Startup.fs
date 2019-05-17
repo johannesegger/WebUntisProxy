@@ -160,10 +160,7 @@ type Startup() =
                 c.BaseAddress <- Environment.host
             )
             .ConfigurePrimaryHttpMessageHandler(fun () ->
-                let cookieContainer = CookieContainer()
-                
-                cookieContainer.Add(Cookie("schoolname", Environment.schoolName, "/WebUntis", Environment.host.Host))
-                new HttpClientHandler(CookieContainer = cookieContainer) :> HttpMessageHandler
+                new HttpClientHandler(AllowAutoRedirect = false) :> HttpMessageHandler
             )
         |> ignore
 
