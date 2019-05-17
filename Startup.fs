@@ -38,7 +38,7 @@ module Main =
         printfn "Uri: %O" request.RequestUri
         printfn "Method: %A" request.Method
         printfn "Headers:"
-        request.Headers
+        Seq.append request.Headers request.Content.Headers
         |> Seq.iter (fun header ->
             printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
         )
@@ -49,12 +49,12 @@ module Main =
         printfn "Method: %A" response.RequestMessage.Method
         printfn "Status: %A (%s)" response.StatusCode response.ReasonPhrase
         printfn "Response headers:"
-        response.Headers
+        Seq.append response.Headers response.Content.Headers
         |> Seq.iter (fun header ->
             printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
         )
         printfn "Request headers:"
-        response.RequestMessage.Headers
+        Seq.append response.RequestMessage.Headers response.RequestMessage.Content.Headers
         |> Seq.iter (fun header ->
             printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
         )
