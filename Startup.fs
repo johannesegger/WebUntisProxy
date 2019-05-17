@@ -32,6 +32,32 @@ module HttpClientNames =
     let webUntis = "webuntis"
 
 module Main =
+    let private printRequest (request: HttpRequestMessage) =
+        printfn "==== Request"
+        printfn "Uri: %O" request.RequestUri
+        printfn "Method: %A" request.Method
+        printfn "Headers:"
+        request.Headers
+        |> Seq.iter (fun header ->
+            printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
+        )
+
+    let private printResponse (response: HttpResponseMessage) =
+        printfn "==== Response"
+        printfn "Uri: %O" response.RequestMessage.RequestUri
+        printfn "Method: %A" response.RequestMessage.Method
+        printfn "Status: %A (%s)" response.StatusCode response.ReasonPhrase
+        printfn "Response headers:"
+        response.Headers
+        |> Seq.iter (fun header ->
+            printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
+        )
+        printfn "Request headers:"
+        response.RequestMessage.Headers
+        |> Seq.iter (fun header ->
+            printfn "* \"%s\" = \"%s\"" header.Key (String.concat " | " header.Value)
+        )
+
     let proxy (context: HttpContext) = async {
         let httpClientFactory = context.RequestServices.GetService<IHttpClientFactory>()
         use httpClient = httpClientFactory.CreateClient(HttpClientNames.webUntis)
