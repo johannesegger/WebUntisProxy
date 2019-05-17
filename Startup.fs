@@ -101,17 +101,7 @@ module Main =
             let value =
                 if h.Key.Equals("Location", StringComparison.InvariantCultureIgnoreCase) then
                     h.Value
-                    |> Seq.map (fun v ->
-                        let uriBuilder = UriBuilder v
-                        if uriBuilder.Host.Equals(Environment.host.Host, StringComparison.InvariantCultureIgnoreCase) then
-                            uriBuilder.Host <- context.Request.Host.Host
-                            uriBuilder.Port <-
-                                context.Request.Host.Port
-                                |> Option.ofNullable
-                                |> Option.defaultValue -1
-                            uriBuilder.Scheme <- context.Request.Scheme
-                        uriBuilder.ToString()
-                    )
+                    |> Seq.map (fun v -> v.Replace(Environment.host.ToString(), sprintf "%s://%s/" context.Request.Scheme context.Request.Host.Value))
                 else h.Value
             h.Key, value)
         |> Seq.iter (fun (key, value) ->
