@@ -93,11 +93,29 @@ module Main =
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
         // printResponse response
 
-        // response.Headers
-        // |> Seq.iter (fun h ->
-        //     context.Response.Headers.Add(h.Key, StringValues(Seq.toArray h.Value))
-        // )
         context.Response.StatusCode <- int response.StatusCode
+
+        response.Headers
+        |> Seq.map (fun h ->
+            let value =
+                if h.Key.Equals("Location", StringComparison.InvariantCultureIgnoreCase) then
+                    h.Value
+                    |> Seq.map (fun v ->
+                        let uriBuilder = UriBuilder v
+                        if uriBuilder.Host.Equals(Environment.host.Host, StringComparison.InvariantCultureIgnoreCase) then
+                            uriBuilder.Host <- context.Request.Host.Host
+                            uriBuilder.Port <-
+                                context.Request.Host.Port
+                                |> Option.ofNullable
+                                |> Option.defaultValue -1
+                            uriBuilder.Scheme <- context.Request.Scheme
+                        uriBuilder.ToString()
+                    )
+                else h.Value
+            h.Key, value)
+        |> Seq.iter (fun (key, value) ->
+            context.Response.Headers.Add(key, StringValues(Seq.toArray value))
+        )
 
         response.Content.Headers
         |> Seq.iter (fun h ->
