@@ -1,6 +1,7 @@
 namespace WebUntisProxy
 
 open System
+open System.IO
 open System.Net
 open System.Net.Http
 open System.Text
