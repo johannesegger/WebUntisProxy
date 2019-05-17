@@ -87,7 +87,10 @@ module Main =
         |> Option.ofObj
         |> Option.map Headers.MediaTypeHeaderValue.Parse
         |> Option.iter (fun contentType -> request.Content.Headers.ContentType <- contentType)
+
+        // printRequest request
         let! response = httpClient.SendAsync(request) |> Async.AwaitTask
+        // printResponse response
 
         // response.Headers
         // |> Seq.iter (fun h ->
